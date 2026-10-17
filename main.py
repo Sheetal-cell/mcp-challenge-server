@@ -10,7 +10,18 @@ current_challenge = ContextVar("current_challenge", default=None)
 
 EMAIL = "25f1001114@ds.study.iitm.ac.in"
 
-mcp = FastMCP("Exam Challenge Server")
+security = TransportSecuritySettings(
+    allowed_hosts=[
+        "mcp-challenge-server-k48r.onrender.com",
+        "mcp-challenge-server-k48r.onrender.com:*",
+    ],
+    enable_dns_rebinding_protection=True,
+)
+
+mcp = FastMCP(
+    "Exam Challenge Server",
+    transport_security=security,
+)
 
 
 class ChallengeHeaderMiddleware:
@@ -57,16 +68,10 @@ def solve_challenge() -> str:
     return hashlib.sha256(message.encode("utf-8")).hexdigest()[:16]
 
 
-security = TransportSecuritySettings(
-    allowed_hosts=[
-        "mcp-challenge-server-k48r.onrender.com",
-        "mcp-challenge-server-k48r.onrender.com:*",
-    ],
-    enable_dns_rebinding_protection=True,
-)
+
 
 app = ChallengeHeaderMiddleware(
-    mcp.streamable_http_app(transport_security=security)
+    mcp.streamable_http_app()
 )
 
 
