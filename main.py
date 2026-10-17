@@ -1,7 +1,7 @@
 import os
 import hashlib
 from contextvars import ContextVar
-
+from mcp.server.transport_security import TransportSecuritySettings
 import uvicorn
 from mcp.server.fastmcp import FastMCP
 
@@ -57,7 +57,17 @@ def solve_challenge() -> str:
     return hashlib.sha256(message.encode("utf-8")).hexdigest()[:16]
 
 
-app = ChallengeHeaderMiddleware(mcp.streamable_http_app())
+security = TransportSecuritySettings(
+    allowed_hosts=[
+        "mcp-challenge-server-k48r.onrender.com",
+        "mcp-challenge-server-k48r.onrender.com:*",
+    ],
+    enable_dns_rebinding_protection=True,
+)
+
+app = ChallengeHeaderMiddleware(
+    mcp.streamable_http_app(transport_security=security)
+)
 
 
 if __name__ == "__main__":
